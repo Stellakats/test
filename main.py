@@ -6,7 +6,7 @@ from tensorflow.keras import layers
 from neptune.new.integrations.tensorflow_keras import NeptuneCallback
 
 # Select project
-run = neptune.init(project='stella2/testing',
+run = neptune.init(project='menagerie/testing',
                    tags=['no filtering'],
                    name='name')
 
