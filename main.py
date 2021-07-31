@@ -41,7 +41,7 @@ train_ds = tf.keras.preprocessing.image_dataset_from_directory(
     batch_size=args['batch_size'],
 )
 val_ds = tf.keras.preprocessing.image_dataset_from_directory(
-    "/Users/admnin/Desktop/PetImages",
+    "/mnt/storage/data/stella/PetImages",
     validation_split=0.2,
     subset="validation",
     seed=args['seed'],
