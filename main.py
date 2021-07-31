@@ -4,16 +4,18 @@ from tensorflow import keras
 import neptune.new as neptune
 from tensorflow.keras import layers
 from neptune.new.integrations.tensorflow_keras import NeptuneCallback
+from config import build_parser
 
 # Select project
 run = neptune.init(project='team-menagerie/testing',
                    tags=['with filter'],
-                   name='name')
+                   api_token=os.environ['NEPTUNE_API_TOKEN'])
 
 # data
 
-image_size = (180, 180)
-batch_size = 32
+parser = build_parser()
+args = vars(parser.parse_args())
+run['parameters'] = args
 
 num_skipped = 0
 for folder_path in ("/Users/admnin/Desktop/PetImages/Cat", "/Users/admnin/Desktop/PetImages/Dog"):
@@ -34,17 +36,17 @@ train_ds = tf.keras.preprocessing.image_dataset_from_directory(
     "/Users/admnin/Desktop/PetImages",
     validation_split=0.2,
     subset="training",
-    seed=1337,
-    image_size=image_size,
-    batch_size=batch_size,
+    seed=args['seed'],
+    image_size=args['image_size'],
+    batch_size=args['batch_size'],
 )
 val_ds = tf.keras.preprocessing.image_dataset_from_directory(
     "/Users/admnin/Desktop/PetImages",
     validation_split=0.2,
     subset="validation",
-    seed=1337,
-    image_size=image_size,
-    batch_size=batch_size,
+    seed=args['seed'],
+    image_size=args['image_size'],
+    batch_size=args['batch_size'],
 )
 
 train_ds = train_ds.prefetch(buffer_size=32)
@@ -53,7 +55,7 @@ val_ds = val_ds.prefetch(buffer_size=32)
 data_augmentation = keras.Sequential(
     [
         layers.experimental.preprocessing.RandomFlip("horizontal"),
-        layers.experimental.preprocessing.RandomRotation(0.1),
+        layers.experimental.preprocessing.RandomRotation(args['rotation_factor']),
     ]
 )
 
@@ -107,26 +109,26 @@ def make_model(input_shape, num_classes):
         activation = "softmax"
         units = num_classes
 
-    x = layers.Dropout(0.5)(x)
+    x = layers.Dropout(args['dropout'])(x)
     outputs = layers.Dense(units, activation=activation)(x)
     return keras.Model(inputs, outputs)
 
 
-model = make_model(input_shape=image_size + (3,), num_classes=2)
+model = make_model(input_shape=args['image_size'] + (3,), num_classes=2)
 
 # train
 
 epochs = 1
 
 callbacks = [
-    tf.keras.callbacks.EarlyStopping(patience=2),
+    tf.keras.callbacks.EarlyStopping(patience=args['patience']),
     tf.keras.callbacks.ModelCheckpoint(filepath='model.{epoch:02d}-{val_loss:.2f}.h5'),
     tf.keras.callbacks.TensorBoard(log_dir='./logs'),
 ]
 neptune_cbks = NeptuneCallback(run=run, base_namespace='metrics')
 
 model.compile(
-    optimizer=keras.optimizers.Adam(1e-3),
+    optimizer=keras.optimizers.Adam(args['learning_rate']),
     loss="binary_crossentropy",
     metrics=["accuracy"],
 )
