@@ -18,7 +18,7 @@ args = vars(parser.parse_args())
 run['parameters'] = args
 
 num_skipped = 0
-for folder_path in ("/Users/admnin/Desktop/PetImages/Cat", "/Users/admnin/Desktop/PetImages/Dog"):
+for folder_path in ("/mnt/storage/data/stella/PetImages/Cat", "/mnt/storage/data/stella/PetImages/Dog"):
     for fname in os.listdir(folder_path):
         fpath = os.path.join(folder_path, fname)
         try:
@@ -33,7 +33,7 @@ for folder_path in ("/Users/admnin/Desktop/PetImages/Cat", "/Users/admnin/Deskto
             os.remove(fpath)
 
 train_ds = tf.keras.preprocessing.image_dataset_from_directory(
-    "/Users/admnin/Desktop/PetImages",
+    "/mnt/storage/data/stella/PetImages",
     validation_split=0.2,
     subset="training",
     seed=args['seed'],
